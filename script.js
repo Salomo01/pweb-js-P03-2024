@@ -3,12 +3,11 @@ let cart = JSON.parse(localStorage.getItem('cart')) || [];
 let currentPage = 0;
 let itemsPerPage = 5;
 
-// menetapkan kategori yang sesuai untuk URL
 const categoryUrls = {
     smartphones: 'https://dummyjson.com/products/category/smartphones',
     laptops: 'https://dummyjson.com/products/category/laptops',
     beauty: 'https://dummyjson.com/products/category/beauty',
-    food: 'https://dummyjson.com/products/category/food' 
+    food: 'https://dummyjson.com/products/category/food'
 };
 
 const productList = document.getElementById('product-list');
@@ -16,17 +15,19 @@ const cartItemsList = document.getElementById('cart-items');
 const totalItems = document.getElementById('total-items');
 const totalPrice = document.getElementById('total-price');
 const itemsPerPageSelect = document.getElementById('items-per-page');
-
+const openCartBtn = document.getElementById('open-cart');
+const closeCartBtn = document.querySelector('.close-cart');
+const cartAside = document.querySelector('aside');
+const cartOverlay = document.querySelector('.cart-overlay');
 
 const fetchProducts = (category = 'all', limit = itemsPerPage, skip = currentPage * itemsPerPage) => {
     let url;
-
     if (category === 'all') {
         url = `https://dummyjson.com/products?limit=${limit}&skip=${skip}`;
     } else if (categoryUrls[category]) {
         url = `${categoryUrls[category]}?limit=${limit}&skip=${skip}`;
     } else {
-        return; // jika kategori tidak valid, tidak melakukan apapun
+        return;
     }
 
     fetch(url)
@@ -40,7 +41,6 @@ const fetchProducts = (category = 'all', limit = itemsPerPage, skip = currentPag
         });
 };
 
-// Display products on the page
 const displayProducts = (products) => {
     productList.innerHTML = '';
     products.forEach(product => {
@@ -48,9 +48,14 @@ const displayProducts = (products) => {
         productDiv.className = 'product';
         productDiv.innerHTML = `
             <img src="${product.thumbnail || 'placeholder.jpg'}" alt="${product.title}">
-            <h3>${product.title}</h3>
-            <p>$${product.price}</p>
-            <button onclick="addToCart(${product.id})">Add to Cart</button>
+            <div class="product-info">
+                <h3>${product.title}</h3>
+                <p>$${product.price}</p>
+                <button onclick="addToCart(${product.id})">
+                    <i class="fas fa-shopping-cart"></i>
+                    Add to Cart
+                </button>
+            </div>
         `;
         productList.appendChild(productDiv);
     });
@@ -61,7 +66,7 @@ const addToCart = (id) => {
     const cartItem = cart.find(item => item.id === id);
     
     if (cartItem) {
-        cartItem.quantity += 1; 
+        cartItem.quantity += 1;
     } else {
         cart.push({...product, quantity: 1});
     }
@@ -69,15 +74,13 @@ const addToCart = (id) => {
     updateCart();
 };
 
-
 const updateCart = () => {
-    localStorage.setItem('cart', JSON.stringify(cart)); 
-    displayCart(); 
+    localStorage.setItem('cart', JSON.stringify(cart));
+    displayCart();
 };
 
-
 const displayCart = () => {
-    cartItemsList.innerHTML = ''; 
+    cartItemsList.innerHTML = '';
     let totalItemsCount = 0;
     let totalPriceCount = 0;
 
@@ -85,19 +88,26 @@ const displayCart = () => {
         totalItemsCount += item.quantity;
         totalPriceCount += item.price * item.quantity;
 
-        const cartItem = document.createElement('li');
-        cartItem.innerHTML = `
-            ${item.title} - $${item.price} x 
-            <button onclick="changeQuantity(${item.id}, 1)">+</button>
-            ${item.quantity}
-            <button onclick="changeQuantity(${item.id}, -1)">-</button>
-            <button onclick="removeFromCart(${item.id})">Remove</button>
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <div class="cart-item-details">
+                <h4>${item.title}</h4>
+                <p>$${item.price}</p>
+            </div>
+            <div class="cart-item-quantity">
+                <button onclick="changeQuantity(${item.id}, -1)">-</button>
+                <span>${item.quantity}</span>
+                <button onclick="changeQuantity(${item.id}, 1)">+</button>
+            </div>
+            <button class="remove-item" onclick="removeFromCart(${item.id})">
+                <i class="fas fa-trash"></i>
+            </button>
         `;
-        cartItemsList.appendChild(cartItem);
+        cartItemsList.appendChild(li);
     });
 
-    totalItems.textContent = totalItemsCount; 
-    totalPrice.textContent = totalPriceCount.toFixed(2); 
+    totalItems.textContent = totalItemsCount;
+    totalPrice.textContent = totalPriceCount.toFixed(2);
 };
 
 const changeQuantity = (id, delta) => {
@@ -112,74 +122,55 @@ const changeQuantity = (id, delta) => {
     }
 };
 
-
 const removeFromCart = (id) => {
-    cart = cart.filter(item => item.id !== id); 
-    updateCart(); 
+    cart = cart.filter(item => item.id !== id);
+    updateCart();
 };
 
-itemsPerPageSelect.addEventListener('change', (e) => {
-    itemsPerPage = parseInt(e.target.value);
-    fetchProducts(); 
+// Cart open/close functionality
+openCartBtn.addEventListener('click', () => {
+    cartAside.classList.add('open');
+    cartOverlay.classList.add('open');
 });
 
+closeCartBtn.addEventListener('click', () => {
+    cartAside.classList.remove('open');
+    cartOverlay.classList.remove('open');
+});
+
+cartOverlay.addEventListener('click', () => {
+    cartAside.classList.remove('open');
+    cartOverlay.classList.remove('open');
+});
+
+// Event Listeners
+itemsPerPageSelect.addEventListener('change', (e) => {
+    itemsPerPage = parseInt(e.target.value);
+    currentPage = 0;
+    fetchProducts();
+});
 
 document.getElementById('prev').addEventListener('click', () => {
     if (currentPage > 0) {
-        currentPage--; 
-        fetchProducts(); 
+        currentPage--;
+        fetchProducts();
     }
 });
 
 document.getElementById('next').addEventListener('click', () => {
-    currentPage++; 
-    fetchProducts(); 
+    currentPage++;
+    fetchProducts();
 });
 
 document.querySelectorAll('nav a').forEach(link => {
     link.addEventListener('click', (e) => {
-        e.preventDefault(); 
-        const category = e.target.getAttribute('data-category'); 
-        fetchProducts(category); 
+        e.preventDefault();
+        const category = e.target.getAttribute('data-category');
+        currentPage = 0;
+        fetchProducts(category);
     });
-});
-
-fetchProducts(); 
-updateCart(); 
-
-
-document.querySelectorAll('nav a').forEach(link => {
-    link.addEventListener('click', (e) => {
-        e.preventDefault(); 
-        const category = e.target.getAttribute('data-category'); 
-        currentPage = 0; // mereset page ketika di refresh
-        fetchProducts(category); // Fetch products ketika kategori di pilih
-    });
-});
-
-// Initialize function pada saat product loading dan penambahan cart
-const initialize = () => {
-    fetchProducts(); // fetch products on page load
-    updateCart(); // update cart pada saat page load
-};
-
-
-window.addEventListener('storage', (event) => {
-    if (event.key === 'cart') {
-        cart = JSON.parse(event.newValue) || []; // Update cart kalau terditeksi perubahan
-        displayCart(); // ngerefresh tampilan cart
-    }
 });
 
 // Initialize the app
-initialize();
-
-
-const clearCart = () => {
-    cart = [];
-    localStorage.removeItem('cart'); // ngehapus keranjang dri local storgae
-    displayCart(); // Update tampilan keranjangnya
-};
-
-
-
+fetchProducts();
+updateCart();
