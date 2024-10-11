@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern E-Commerce Website</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>My E-Commerce Store</h1>
+            <nav>
+                <ul>
+                    <li><a href="#" data-category="all">All Products</a></li>
+                    <li><a href="#" data-category="smartphones">Smartphones</a></li>
+                    <li><a href="#" data-category="laptops">Laptops</a></li>
+                    <li><a href="#" data-category="beauty">Beauty</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="filters">
+                <label for="items-per-page">Items per page:</label>
+                <select id="items-per-page">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="15">15</option>
+                </select>
+            </div>
+
+            <section id="product-list" class="product-grid"></section>
+
+            <div id="pagination" class="pagination">
+                <button id="prev">Previous</button>
+                <button id="next">Next</button>
+            </div>
+        </div>
+    </main>
+
+    <aside>
+        <h2>Your Cart</h2>
+        <ul id="cart-items"></ul>
+        <p>Total Items: <span id="total-items">0</span></p>
+        <p>Total Price: $<span id="total-price">0.00</span></p>
+        <button id="checkout">Checkout</button>
+    </aside>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Modern E-Commerce Store</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
